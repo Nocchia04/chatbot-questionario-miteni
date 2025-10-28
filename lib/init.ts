@@ -17,8 +17,17 @@ export function initializeApp() {
   logger.info("🚀 Inizializzazione applicazione Miteni Chatbot");
 
   try {
-    // Avvia gli scheduler per backup e cleanup automatici
-    initializeSchedulers();
+    // Verifica se siamo su Vercel (ambiente serverless)
+    const isVercel = process.env.VERCEL === '1';
+    
+    if (isVercel) {
+      logger.info("🌐 Ambiente Vercel rilevato - scheduler disabilitati");
+      logger.info("💡 Le sessioni verranno mantenute solo in memoria (RAM)");
+    } else {
+      // Avvia gli scheduler per backup e cleanup automatici (solo in locale)
+      initializeSchedulers();
+      logger.info("📅 Scheduler attivati per backup e cleanup");
+    }
 
     initialized = true;
     logger.info("✅ Applicazione inizializzata con successo");

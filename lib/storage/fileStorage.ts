@@ -8,8 +8,16 @@ const SESSIONS_DIR = path.join(process.cwd(), "data", "sessions");
 const BACKUP_DIR = path.join(process.cwd(), "data", "backups");
 const LOGS_DIR = path.join(process.cwd(), "data", "logs");
 
-// Inizializza le directory se non esistono
+// Verifica se siamo su Vercel (ambiente serverless senza file system write)
+const isVercel = process.env.VERCEL === '1';
+
+// Inizializza le directory se non esistono (solo se NON siamo su Vercel)
 function ensureDirectories() {
+  if (isVercel) {
+    // Su Vercel non possiamo creare directory
+    return;
+  }
+  
   [SESSIONS_DIR, BACKUP_DIR, LOGS_DIR].forEach((dir) => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -19,8 +27,15 @@ function ensureDirectories() {
 
 /**
  * Salva una sessione su file system
+ * NOTA: Su Vercel (serverless) questo viene skippato perché il file system è read-only
  */
 export async function saveSessionToFile(ctx: ConversationContext): Promise<void> {
+  // Skip su Vercel - le sessioni rimangono solo in memoria (RAM)
+  if (isVercel) {
+    // console.log(`💾 [Vercel] Sessione mantenuta in memoria: ${ctx.sessionId}`);
+    return;
+  }
+  
   try {
     ensureDirectories();
     
@@ -40,16 +55,25 @@ export async function saveSessionToFile(ctx: ConversationContext): Promise<void>
     console.log(`💾 Sessione salvata su file: ${ctx.sessionId} (${ctx.history.length} messaggi)`);
   } catch (error) {
     console.error(`❌ Errore nel salvare sessione ${ctx.sessionId}:`, error);
-    throw error;
+    // Non fare throw su Vercel - continua comunque
+    if (!isVercel) {
+      throw error;
+    }
   }
 }
 
 /**
  * Carica una sessione da file system
+ * NOTA: Su Vercel (serverless) questo ritorna sempre null perché non c'è persistenza su disco
  */
 export async function loadSessionFromFile(
   sessionId: string
 ): Promise<ConversationContext | null> {
+  // Skip su Vercel - non ci sono file da leggere
+  if (isVercel) {
+    return null;
+  }
+  
   try {
     ensureDirectories();
     

@@ -175,6 +175,32 @@ export function validateProvincia(input: string): ValidationResult {
 }
 
 /**
+ * Valida la modalità di compilazione (CHAT o QUESTIONARIO)
+ */
+export function validateModalita(input: string): ValidationResult {
+  const trimmed = input.trim().toLowerCase();
+  
+  if (trimmed.includes("telefono") || trimmed.includes("chiamata") || trimmed.includes("chiamare")) {
+    return {
+      isValid: true,
+      normalized: "QUESTIONARIO",
+    };
+  }
+  
+  if (trimmed.includes("chat") || trimmed.includes("scritto") || trimmed.includes("qui")) {
+    return {
+      isValid: true,
+      normalized: "CHAT",
+    };
+  }
+  
+  return {
+    isValid: false,
+    error: "Specifica se preferisci continuare in chat o essere chiamato telefonicamente.",
+  };
+}
+
+/**
  * Valida la data di nascita (gg/mm/aaaa)
  */
 export function validateDataNascita(input: string): ValidationResult {
@@ -261,7 +287,7 @@ export function validateByKey(
     case "sesso":
       return validateSesso(input);
     case "luogoNascita":
-      return validateTextResponse(input, 2); // Solo non vuoto
+      return validateTextResponse(input, 2);
     case "provinciaNascita":
       return validateProvincia(input);
     case "telefono":
@@ -270,8 +296,9 @@ export function validateByKey(
       return validateEmail(input);
     case "dataNascita":
       return validateDataNascita(input);
+    case "modalita":
+      return validateModalita(input);
     default:
-      // Per tutte le altre risposte (R1-R17, modalita, ecc.)
       return validateTextResponse(input, 1);
   }
 }

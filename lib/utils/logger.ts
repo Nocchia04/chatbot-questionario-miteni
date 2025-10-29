@@ -2,12 +2,23 @@
 import fs from "fs";
 import path from "path";
 
+// Rileva se siamo su Vercel (ambiente serverless)
+const IS_VERCEL = process.env.VERCEL === '1';
+
 const LOGS_DIR = path.join(process.cwd(), "data", "logs");
 
-// Assicurati che la directory esista
+// Assicurati che la directory esista (solo se NON siamo su Vercel)
 function ensureLogsDir() {
-  if (!fs.existsSync(LOGS_DIR)) {
-    fs.mkdirSync(LOGS_DIR, { recursive: true });
+  if (IS_VERCEL) {
+    return; // Skip su Vercel
+  }
+  
+  try {
+    if (!fs.existsSync(LOGS_DIR)) {
+      fs.mkdirSync(LOGS_DIR, { recursive: true });
+    }
+  } catch (error) {
+    console.warn("⚠️ Impossibile creare directory logs (normale su Vercel)");
   }
 }
 
@@ -22,17 +33,21 @@ type LogEntry = {
 };
 
 /**
- * Logger strutturato che scrive su console e file
+ * Logger strutturato che scrive su console e file (file solo in locale)
  */
 class Logger {
   private currentDate = this.getDateString();
-  private logFilePath = this.getLogFilePath();
+  private logFilePath: string | null = this.getLogFilePath();
 
   private getDateString(): string {
     return new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   }
 
-  private getLogFilePath(): string {
+  private getLogFilePath(): string | null {
+    if (IS_VERCEL) {
+      return null; // Nessun file su Vercel
+    }
+    
     ensureLogsDir();
     return path.join(LOGS_DIR, `app-${this.currentDate}.log`);
   }
@@ -63,11 +78,9 @@ class Logger {
   }
 
   private writeLog(entry: LogEntry) {
-    this.checkRotateLog();
-
     const logLine = this.formatLogEntry(entry);
 
-    // Scrivi su console con colori
+    // Scrivi su console con emoji
     const emoji = {
       INFO: "ℹ️",
       WARN: "⚠️",
@@ -77,11 +90,15 @@ class Logger {
 
     console.log(`${emoji} ${logLine}`);
 
-    // Scrivi su file in modo asincrono
-    try {
-      fs.appendFileSync(this.logFilePath, logLine + "\n", "utf-8");
-    } catch (error) {
-      console.error("Errore nello scrivere il log su file:", error);
+    // Scrivi su file SOLO se NON siamo su Vercel
+    if (!IS_VERCEL && this.logFilePath) {
+      this.checkRotateLog();
+      
+      try {
+        fs.appendFileSync(this.logFilePath, logLine + "\n", "utf-8");
+      } catch (error) {
+        console.error("Errore nello scrivere il log su file:", error);
+      }
     }
   }
 

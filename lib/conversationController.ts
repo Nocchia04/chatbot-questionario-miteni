@@ -8,6 +8,7 @@ import { logger } from "./utils/logger";
 import { isInContext, getOffTopicResponse } from "./guardrails/contextGuardrail";
 import { upsertSheetRow } from "./integrations/googleSheets";
 import { generateSummary } from "./utils/generateSummary";
+import { findMatchingFAQ } from "./knowledge/faqRisarcimento";
 
 export type HandleAnswerResult = {
   botMessages: string[];
@@ -39,7 +40,22 @@ export async function handleAnswer(
 
   const currentNode = FLOW[ctx.currentState];
 
-  // 1. GUARDRAIL: Verifica che la domanda sia nel contesto PFAS/Miteni
+  // 1. FAQ HANDLER: Controlla se è una domanda FAQ comune
+  const matchingFAQ = findMatchingFAQ(userMessage);
+  if (matchingFAQ && userMessage.includes("?")) {
+    logger.info("FAQ match found", ctx.sessionId, { faq: matchingFAQ.domanda });
+    
+    ctx.history.push({ from: "user", text: userMessage });
+    ctx.history.push({ from: "bot", text: matchingFAQ.risposta });
+    saveSession(ctx);
+    
+    return {
+      botMessages: [matchingFAQ.risposta],
+      done: false,
+    };
+  }
+
+  // 2. GUARDRAIL: Verifica che la domanda sia nel contesto PFAS/Miteni
   const contextCheck = isInContext(userMessage);
   
   if (!contextCheck.inContext && contextCheck.confidence === "high") {
@@ -210,7 +226,7 @@ export async function handleAnswer(
     });
   }
 
-  // 5. Se l'AI dice che possiamo avanzare, avanziamo allo stato successivo
+  // 6. Se l'AI dice che possiamo avanzare, avanziamo allo stato successivo
   if (aiResult.advance) {
     const nextState = currentNode.next(
       ctx,

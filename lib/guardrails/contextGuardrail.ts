@@ -6,67 +6,39 @@
 
 // Keywords che indicano domande nel contesto corretto
 const VALID_CONTEXT_KEYWORDS = [
-  // PFAS related
-  "pfas",
-  "miteni",
-  "inquinamento",
-  "acqua",
-  "contaminazione",
-  "sostanze",
-  "chimiche",
-  "veleno",
-  "tossico",
-  "sangue",
-  "analisi",
-  "valori",
+  "pfas", "pfoa", "pfos", "genx", "c6o4",
+  "miteni", "mitsubishi", "icig",
+  "trissino", "vicenza", "verona", "padova", "veneto",
+  "inquinamento", "contaminazione", "inquinato", "contaminato",
+  "acqua", "falda", "acquedotto", "pozzo", "rubinetto",
+  "sostanze", "chimiche", "perfluorurati", "perfluoroalchiliche",
+  "veleno", "tossico", "cancerogeno",
+  "sangue", "analisi", "valori", "biomonitoraggio",
+  "zona rossa", "aree contaminate",
   
-  // Legal/processo
-  "risarcimento",
-  "avvocato",
-  "legale",
-  "causa",
-  "tribunale",
-  "danni",
-  "rimborso",
-  "soldi",
-  "compenso",
+  "risarcimento", "indennizzo", "compenso", "rimborso",
+  "azione collettiva", "class action", "causa", "processo",
+  "avvocato", "legale", "tribunale", "sentenza",
+  "danni", "danno", "danneggiato",
+  "finanziamento contenzioso", "spv", "litigation",
+  "aderire", "aderente", "adesione",
+  "documenti", "certificato", "residenza",
+  "costi", "spese", "gratuito", "anticipare",
+  "tempistiche", "tempo", "anni",
   
-  // Health
-  "salute",
-  "malattia",
-  "malato",
-  "sintomi",
-  "dottore",
-  "medico",
-  "ospedale",
-  "asl",
+  "salute", "malattia", "malato", "patologia",
+  "tumore", "cancro", "tiroide", "colesterolo", "diabete",
+  "sintomi", "dottore", "medico", "ospedale", "asl",
   
-  // Location/casa
-  "zona rossa",
-  "veneto",
-  "vicenza",
-  "casa",
-  "abitazione",
-  "rubinetto",
-  "pozzo",
+  "casa", "abitazione", "immobile", "terreno", "proprietà",
+  "residente", "abitare", "abitato", "vissuto",
   
-  // Process
-  "questionario",
-  "domanda",
-  "compilare",
-  "pratica",
-  "documentazione",
-  "aiuto",
+  "mamme no pfas", "greenpeace", "legambiente",
+  "questionario", "domanda", "compilare", "pratica",
+  "aiuto", "assistenza", "supporto",
   
-  // Emotional
-  "preoccupato",
-  "paura",
-  "ansia",
-  "sicuro",
-  "proteggere",
-  "famiglia",
-  "figli",
-  "bambini",
+  "famiglia", "figli", "bambini", "parente", "deceduto",
+  "preoccupato", "paura", "ansia", "sicuro", "proteggere",
 ];
 
 // Keywords che indicano domande completamente off-topic
@@ -214,13 +186,13 @@ export function isInContext(userMessage: string): {
  */
 export function getOffTopicResponse(): string {
   const responses = [
-    "Mi dispiace, posso aiutarti solo con domande relative all'inquinamento da PFAS e al caso Miteni. Torniamo al questionario? 🙏",
+    "Mi dispiace, posso aiutarla solo con domande relative all'inquinamento da PFAS e al caso Miteni. Torniamo al questionario?",
     
-    "Capisco la curiosità, ma sono qui specificamente per aiutarti con la pratica PFAS. Continuiamo con le domande del questionario? 😊",
+    "Capisco, ma sono qui specificamente per assisterla con la pratica PFAS. Continuiamo con le domande del questionario?",
     
-    "Per quella domanda non posso aiutarti, mi occupo solo del caso PFAS Miteni. Torniamo alla compilazione? 📋",
+    "Per quella domanda non posso aiutarla, mi occupo esclusivamente del caso PFAS Miteni. Torniamo alla compilazione?",
     
-    "Sono specializzato solo su questioni PFAS e risarcimenti Miteni. Possiamo continuare con il questionario? 🎯",
+    "Sono specializzato solo su questioni PFAS e risarcimenti Miteni. Possiamo continuare con il questionario?",
   ];
   
   return responses[Math.floor(Math.random() * responses.length)];

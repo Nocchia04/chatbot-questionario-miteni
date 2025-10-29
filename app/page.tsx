@@ -334,7 +334,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-[#e6f9ff] via-white to-[#e6f9ff]">
       {/* Header */}
-      <header className="bg-white shadow-md py-5 px-6 sticky top-0 z-10">
+      <header className="bg-white shadow-md py-5 px-6 fixed top-0 left-0 right-0 z-50">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Image 
@@ -380,7 +380,7 @@ export default function ChatPage() {
       )}
 
       {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto px-4 py-6">
+      <main className="flex-1 overflow-y-auto px-4 py-6 pt-[120px] pb-[120px]">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && !done && (
             <div className="text-center py-16">
@@ -443,7 +443,7 @@ export default function ChatPage() {
       </main>
 
       {/* Input Area */}
-      <footer className="bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)] py-4 px-6">
+      <footer className="bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)] py-4 px-6 fixed bottom-0 left-0 right-0 z-50">
         <div className="max-w-4xl mx-auto">
           {done && (
             <div className="text-center py-4">
@@ -469,7 +469,7 @@ export default function ChatPage() {
                 <input
                   ref={inputRef}
                   type="text"
-                  className={`w-full px-5 py-3 rounded-lg border-2 focus:outline-none focus:ring-4 transition-all ${
+                  className={`w-full px-5 py-3 rounded-lg border-2 focus:outline-none focus:ring-4 transition-all text-gray-900 ${
                     inputError
                       ? "border-red-300 focus:border-red-500 focus:ring-red-100"
                       : "border-gray-300 focus:border-[#00c4ff] focus:ring-cyan-100"

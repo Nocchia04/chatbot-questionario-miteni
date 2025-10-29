@@ -2,6 +2,21 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/sessionStore";
 
+// Forza il runtime Node.js (non Edge) su Vercel
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 /**
  * GET /api/session?sessionId=xxx
  * Carica una sessione esistente con tutto lo storico
@@ -14,7 +29,7 @@ export async function GET(req: Request) {
     if (!sessionId) {
       return NextResponse.json(
         { error: "sessionId mancante" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -23,7 +38,7 @@ export async function GET(req: Request) {
     if (!session) {
       return NextResponse.json(
         { error: "Sessione non trovata" },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -37,12 +52,12 @@ export async function GET(req: Request) {
         history: session.history,
         done: session.currentState === "FINE",
       },
-    });
+    }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("Errore nel caricare sessione:", error);
     return NextResponse.json(
       { error: "Errore interno del server" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

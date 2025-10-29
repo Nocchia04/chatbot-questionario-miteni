@@ -7,8 +7,24 @@ import { logger } from "@/lib/utils/logger";
 import { initializeApp } from "@/lib/init";
 import { checkRateLimit, addRateLimitHeaders } from "@/lib/middleware/rateLimit";
 
+// Forza il runtime Node.js (non Edge) su Vercel per compatibilità con file system
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // Inizializza l'app al primo import
 initializeApp();
+
+// CORS headers per tutte le risposte
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Gestisci richieste OPTIONS (CORS preflight)
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
 export async function POST(req: NextRequest) {
   // Rate limiting check
@@ -74,7 +90,7 @@ export async function POST(req: NextRequest) {
         sessionId,
         botMessages: [node.question],
         done: false,
-      });
+      }, { headers: corsHeaders });
     }
 
     // chiamata normale: abbiamo un messaggio dell'utente
@@ -84,7 +100,7 @@ export async function POST(req: NextRequest) {
       sessionId,
       botMessages: result.botMessages,
       done: result.done,
-    });
+    }, { headers: corsHeaders });
     
     // Aggiungi header rate limit
     if (rateLimitResult) {
@@ -104,7 +120,7 @@ export async function POST(req: NextRequest) {
         message:
           "Errore interno nel server. Se vuoi lasciami il tuo numero e ti richiamiamo.",
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

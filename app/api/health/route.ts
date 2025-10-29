@@ -4,6 +4,10 @@ import { getSessionStats } from "@/lib/storage/fileStorage";
 import { aiCircuitBreaker } from "@/lib/utils/aiRetry";
 import { getRateLimitStats } from "@/lib/middleware/rateLimit";
 
+// Forza il runtime Node.js (non Edge) su Vercel
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const stats = await getSessionStats();

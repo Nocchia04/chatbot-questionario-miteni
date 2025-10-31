@@ -175,19 +175,51 @@ export function validateProvincia(input: string): ValidationResult {
 }
 
 /**
- * Valida la modalità di compilazione (CHAT o QUESTIONARIO)
+ * Valida la modalità di compilazione (CHAT o TELEFONO)
  */
 export function validateModalita(input: string): ValidationResult {
   const trimmed = input.trim().toLowerCase();
   
-  if (trimmed.includes("telefono") || trimmed.includes("chiamata") || trimmed.includes("chiamare")) {
+  // Keywords per TELEFONO (più varianti possibili)
+  const telefonoKeywords = [
+    "telefon", // match: telefono, telefonicamente, telefonare, ecc
+    "chiamat", // match: chiamata, chiamate, chiamato, ecc
+    "chiamar", // match: chiamare, chiamarmi, ecc
+    "contattat", // match: contattato, contattata, ecc
+    "contatto", // match: contatto, al contatto, ecc
+    "voce", // "preferisco parlare a voce"
+  ];
+  
+  // Keywords per CHAT
+  const chatKeywords = [
+    "chat",
+    "scritto",
+    "scrivere",
+    "qui",
+    "messag", // messaggi, messaggiare
+    "testo",
+    "continuare", // "continuare qui"
+  ];
+  
+  // Check TELEFONO
+  if (telefonoKeywords.some(keyword => trimmed.includes(keyword))) {
     return {
       isValid: true,
-      normalized: "QUESTIONARIO",
+      normalized: "TELEFONO",
     };
   }
   
-  if (trimmed.includes("chat") || trimmed.includes("scritto") || trimmed.includes("qui")) {
+  // Check CHAT
+  if (chatKeywords.some(keyword => trimmed.includes(keyword))) {
+    return {
+      isValid: true,
+      normalized: "CHAT",
+    };
+  }
+  
+  // Fallback: accetta qualsiasi risposta lunga > 3 caratteri come CHAT
+  // (assume che se l'utente scrive, preferisce continuare in chat)
+  if (trimmed.length > 3) {
     return {
       isValid: true,
       normalized: "CHAT",

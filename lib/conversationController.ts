@@ -87,10 +87,14 @@ export async function handleAnswer(
   );
   // aiResult = { kind, botReply, interpretedAnswer, advance }
   
-  logger.debug("AI result", ctx.sessionId, { 
+  logger.info("AI result", ctx.sessionId, { 
+    state: ctx.currentState,
     kind: aiResult.kind, 
     advance: aiResult.advance,
-    contextConfidence: contextCheck.confidence 
+    hasInterpretedAnswer: !!aiResult.interpretedAnswer,
+    interpretedAnswer: aiResult.interpretedAnswer?.substring(0, 50), // primi 50 char per debug
+    contextConfidence: contextCheck.confidence,
+    userMessageLength: userMessage.length
   });
 
   // 3. aggiorniamo la history con l'input utente
@@ -105,7 +109,11 @@ export async function handleAnswer(
     // NON chiediamo subito la prossima domanda
     // Rispondiamo solo empatia+spiegazione.
 
-    logger.info("FAQ detected", ctx.sessionId);
+    logger.info("FAQ detected", ctx.sessionId, {
+      state: ctx.currentState,
+      userMessage: userMessage.substring(0, 100),
+      botReply: aiResult.botReply.substring(0, 100)
+    });
 
     // Aggiungi la risposta bot alla history
     ctx.history.push({ from: "bot", text: aiResult.botReply });
@@ -130,8 +138,11 @@ export async function handleAnswer(
     if (!validation.isValid) {
       // La risposta non è valida, chiedi di nuovo
       logger.warn("Validation failed", ctx.sessionId, { 
-        key: currentNode.saveKey, 
-        error: validation.error 
+        state: ctx.currentState,
+        key: currentNode.saveKey,
+        interpretedAnswer: aiResult.interpretedAnswer,
+        error: validation.error,
+        userMessage: userMessage.substring(0, 100) // primi 100 char
       });
       
       const validationErrorMessage = `${validation.error}\n\nPer favore, riprova.`;
@@ -227,7 +238,17 @@ export async function handleAnswer(
   }
 
   // 6. Se l'AI dice che possiamo avanzare, avanziamo allo stato successivo
-  if (aiResult.advance) {
+  // SAFETY: Se kind="answer" MA advance=false, forziamo advance=true per evitare loop infiniti
+  const shouldAdvance = aiResult.advance || (aiResult.kind === "answer" && aiResult.interpretedAnswer);
+  
+  if (!shouldAdvance && aiResult.kind === "answer") {
+    logger.warn("AI returned answer without advance, forcing advance to prevent loop", ctx.sessionId, {
+      state: ctx.currentState,
+      interpretedAnswer: aiResult.interpretedAnswer
+    });
+  }
+  
+  if (shouldAdvance) {
     const nextState = currentNode.next(
       ctx,
       aiResult.interpretedAnswer || ""

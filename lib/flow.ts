@@ -71,10 +71,13 @@ export const FLOW: Record<StateId, FlowNode> = {
       "Grazie. Preferisce compilare il questionario qui in chat o preferisce che la chiamiamo al telefono per completarlo insieme?",
     saveKey: "modalita",
     next: (ctx, answer) => {
-      const lowered = answer.toLowerCase();
-      if (lowered.includes("telefono") || lowered.includes("chiamata") || lowered.includes("chiamare")) {
+      // Usa il valore normalizzato dalla validazione (TELEFONO o CHAT)
+      const modalitaNormalized = ctx.data.modalita?.normalized;
+      
+      if (modalitaNormalized === "TELEFONO") {
         return "FINE";
       }
+      
       return "SESSO";
     },
   },

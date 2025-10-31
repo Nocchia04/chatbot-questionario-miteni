@@ -86,16 +86,18 @@ Devi restituire SOLO un JSON di questo tipo:
 Spiegazione campi:
 - "kind":
    - "answer" se l'utente sta cercando di rispondere alla domanda corrente del questionario.
-   - "faq" se l'utente sta chiedendo informazioni/dubbi/paure/contesto, NON una risposta alla domanda.
+     IMPORTANTE: Anche risposte vaghe come "non so", "non lo so", "non ne sono a conoscenza", "non ricordo", "niente", "nulla" sono RISPOSTE valide.
+   - "faq" SOLO se l'utente fa una DOMANDA esplicita (con "?") su PFAS/Miteni/risarcimento che NON è la risposta alla domanda corrente.
 - "botReply":
    - Se kind = "faq": rispondi alla domanda dell'utente in modo rassicurante e umano, e ricordagli che stiamo compilando la pratica.
    - Se kind = "answer": ringrazia, conferma di aver capito, tono caldo.
 - "interpretedAnswer":
    - Se kind = "answer": estrai la risposta alla DOMANDA CORRENTE in modo chiaro e breve (non inventare).
+     Se l'utente dice "non so" o simili, riporta esattamente quello: "non so", "non ne sono a conoscenza", etc.
    - Se kind = "faq": deve essere null.
 - "advance":
-   - true solo se kind="answer" E la risposta è abbastanza chiara da poter salvare e passare alla prossima domanda.
-   - false in tutti gli altri casi.
+   - true SEMPRE quando kind="answer", anche se la risposta è vaga o "non so".
+   - false SOLO se kind="faq".
 `;
 
   const contextHint = contextConfidence === "low" 
@@ -119,6 +121,15 @@ COSA DEVI FARE:
 2. SE È CORRELATO: Capire se l'utente ti ha dato una risposta alla domanda corrente oppure ti sta chiedendo una cosa di contesto PFAS/paura.
 
 3. Restituisci il JSON con kind, botReply, interpretedAnswer e advance, come spiegato sopra.
+
+ESEMPI DI CLASSIFICAZIONE CORRETTA:
+- Domanda: "Qual è il tuo nome?" → Risposta: "Marco" → kind="answer", advance=true
+- Domanda: "Qual è il tuo nome?" → Risposta: "non voglio dirlo" → kind="answer", advance=true
+- Domanda: "Cosa sai dei PFAS?" → Risposta: "non so nulla" → kind="answer", advance=true
+- Domanda: "Cosa sai dei PFAS?" → Risposta: "non ne sono a conoscenza" → kind="answer", advance=true
+- Domanda: "Hai fatto analisi?" → Risposta: "no" → kind="answer", advance=true
+- Domanda: "Preferisci chat o telefono?" → Risposta: "telefonicamente" → kind="answer", advance=true
+- Domanda: "Qual è il tuo nome?" → Risposta: "Ma quanto ci vorrà per il risarcimento?" → kind="faq", advance=false
 
 RICORDA: Rispondi SOLO con il JSON valido, senza testo aggiuntivo.
 `;
